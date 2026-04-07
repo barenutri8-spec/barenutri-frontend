@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 350" preserveAspectRatio="xMidYMid slice">
+  <!-- Top-right pink blob (large, partially clipped) -->
+  <ellipse cx="1100" cy="-30" rx="250" ry="160" fill="#f2b5b5" opacity="0.7" />
+  <!-- Top-right darker rose blob overlapping -->
+  <ellipse cx="1250" cy="20" rx="160" ry="100" fill="#d4808f" opacity="0.65" />
+
+  <!-- Bottom-left coral/red circle (partially clipped) -->
+  <circle cx="70" cy="320" r="80" fill="#e8607a" opacity="0.8" />
+
+  <!-- Bottom-left botanical line art -->
+  <g stroke="#444" stroke-width="1.2" fill="none" opacity="0.6" transform="translate(30, 180) scale(0.8)">
+    <path d="M60 180 Q55 120 50 60" />
+    <path d="M50 60 Q20 40 10 10 Q40 30 50 60" />
+    <path d="M50 60 Q80 35 95 5 Q65 30 50 60" />
+    <path d="M52 90 Q25 75 15 50 Q40 65 52 90" />
+    <path d="M52 90 Q80 70 95 45 Q68 65 52 90" />
+    <path d="M54 120 Q30 108 20 85 Q42 100 54 120" />
+    <path d="M54 120 Q78 105 90 80 Q66 98 54 120" />
+    <path d="M56 150 Q35 140 25 120 Q44 132 56 150" />
+    <path d="M56 150 Q75 138 85 115 Q65 130 56 150" />
+  </g>
+
+  <!-- Bottom-right soft pink/mauve blob (partially clipped) -->
+  <ellipse cx="1150" cy="330" rx="250" ry="100" fill="#e8c0cc" opacity="0.6" />
+
+</svg>
