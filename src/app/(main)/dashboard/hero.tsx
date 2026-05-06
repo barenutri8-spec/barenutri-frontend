@@ -1,21 +1,26 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 export default function Hero() {
+  const { user } = useAuthSession();
+
   return (
     <section className="relative h-[600px] w-full overflow-hidden sm:h-[700px] lg:h-[800px]">
       {/* Background image */}
       <Image
-        src="/bariherobg.png"
+        src="/Vibrant Spice & Nut Bowls Banner.png"
         alt="Indian farming landscape at sunrise with farmers and ox carts"
         fill
         priority
-        quality={100}
-        className="object-cover object-center contrast-[1.05] saturate-[1.1]"
+        // quality={100}
+        className="object-cover object-center "
       />
 
       {/* Gradient overlay for text readability */}
-      <div className="absolute inset-0 hero-overlay" />
+      <div className="absolute inset-0 " />
 
       {/* Content */}
       <div className="relative z-10 flex h-full items-center">
@@ -51,15 +56,17 @@ export default function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
-              <Link
-                href="/register"
-                className="flex items-center gap-2 rounded-full border border-white/60 px-6 py-3 text-sm font-semibold text-white transition-all hover:border-[#d4a843] hover:bg-[#d4a843] sm:px-8"
-              >
-                Join Us Now
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </Link>
+              {!user && (
+                <Link
+                  href="/register"
+                  className="flex items-center gap-2 rounded-full border border-white/60 px-6 py-3 text-sm font-semibold text-white transition-all hover:border-[#d4a843] hover:bg-[#d4a843] sm:px-8"
+                >
+                  Join Us Now
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              )}
             </div>
           </div>
         </div>

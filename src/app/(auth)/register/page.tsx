@@ -3,9 +3,81 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { authService } from "@/services/auth.service";
+import { OTP_RESEND_COOLDOWN_MS, ROUTES, STORAGE_KEYS } from "@/constants";
+import { isOtpChallenge, isPasswordLoginComplete } from "@/lib/login-result";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+
+    if (!agreedTerms) {
+      setError("Please accept the Terms of Service and Privacy Policy.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await authService.register({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        password,
+        confirm_password: confirmPassword,
+      });
+      const data = res.data;
+      if (data == null) {
+        setError("Unexpected response from server.");
+        return;
+      }
+
+      if (isPasswordLoginComplete(data)) {
+        /** Do not sign in yet — OTP first, then home (tokens from register are not stored). */
+        const ctx = {
+          email: email.trim(),
+          resend_available_at: Date.now() + OTP_RESEND_COOLDOWN_MS,
+          next_route: ROUTES.HOME,
+          post_register_token_deferred: true,
+        };
+        sessionStorage.setItem(STORAGE_KEYS.OTP_LOGIN_CONTEXT, JSON.stringify(ctx));
+        router.push(ROUTES.LOGIN_VERIFY);
+        return;
+      }
+
+      if (isOtpChallenge(data)) {
+        const ctx = {
+          email: data.email ?? email.trim(),
+          otp_session_id: data.otp_session_id,
+          resend_available_at: Date.now() + OTP_RESEND_COOLDOWN_MS,
+          next_route: ROUTES.HOME,
+        };
+        sessionStorage.setItem(STORAGE_KEYS.OTP_LOGIN_CONTEXT, JSON.stringify(ctx));
+        router.push(ROUTES.LOGIN_VERIFY);
+        return;
+      }
+
+      setError("Unexpected response from server.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -50,7 +122,20 @@ export default function RegisterPage() {
           </p>
 
           {/* Form */}
-          <form className="mt-8 flex flex-col gap-5">
+          <form
+            className="mt-8 flex flex-col gap-5"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            {error ? (
+              <p
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+                role="alert"
+              >
+                {error}
+              </p>
+            ) : null}
+
             {/* Full name */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -61,7 +146,12 @@ export default function RegisterPage() {
               </label>
               <input
                 id="name"
+                name="full_name"
                 type="text"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your name"
                 className="h-11 rounded-lg border border-zinc-300 bg-white px-4 text-sm text-[#3b3838] placeholder:text-zinc-400 focus:border-[#8b1a1a] focus:outline-none focus:ring-1 focus:ring-[#8b1a1a]"
               />
@@ -77,7 +167,12 @@ export default function RegisterPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="h-11 rounded-lg border border-zinc-300 bg-white px-4 text-sm text-[#3b3838] placeholder:text-zinc-400 focus:border-[#8b1a1a] focus:outline-none focus:ring-1 focus:ring-[#8b1a1a]"
               />
@@ -94,7 +189,12 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
                   className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-4 pr-11 text-sm text-[#3b3838] placeholder:text-zinc-400 focus:border-[#8b1a1a] focus:outline-none focus:ring-1 focus:ring-[#8b1a1a]"
                 />
@@ -102,6 +202,71 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                  aria-label={showPassword ? "Hide passwords" : "Show passwords"}
+                >
+                  {showPassword ? (
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm password */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="confirmPassword"
+                className="text-sm font-medium text-[#3b3838]"
+              >
+                Confirm password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirm_password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter your password"
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-4 pr-11 text-sm text-[#3b3838] placeholder:text-zinc-400 focus:border-[#8b1a1a] focus:outline-none focus:ring-1 focus:ring-[#8b1a1a]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                  aria-label={showPassword ? "Hide passwords" : "Show passwords"}
                 >
                   {showPassword ? (
                     <svg
@@ -146,6 +311,8 @@ export default function RegisterPage() {
               <input
                 id="terms"
                 type="checkbox"
+                checked={agreedTerms}
+                onChange={(e) => setAgreedTerms(e.target.checked)}
                 className="h-4 w-4 rounded border-zinc-300 text-[#3d6b35] focus:ring-[#3d6b35]"
               />
               <label htmlFor="terms" className="text-sm text-zinc-500">
@@ -169,7 +336,8 @@ export default function RegisterPage() {
             {/* Create account button */}
             <button
               type="submit"
-              className="gradient-btn mt-2 flex h-12 items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white transition-all"
+              disabled={loading}
+              className="gradient-btn mt-2 flex h-12 items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-60"
             >
               <svg
                 className="h-5 w-5"
@@ -189,7 +357,7 @@ export default function RegisterPage() {
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              Create account
+              {loading ? "Creating account…" : "Create account"}
             </button>
           </form>
 

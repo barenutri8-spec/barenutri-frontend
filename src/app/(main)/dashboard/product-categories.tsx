@@ -3,25 +3,32 @@ import Link from "next/link";
 
 const categories = [
   {
-    title: "Spices & Turmeric",
+    title: "Powders",
     description:
-      "Hand-picked, sun-dried, stone-ground spices with no added colours or fillers.",
+      "Turmeric, kumkum, and karam powders prepared with authentic traditional methods.",
     image: "/spices.jpg",
-    href: "/products?category=spices",
+    href: "/products?category=powders",
   },
   {
-    title: "Traditional Flours",
+    title: "Flours",
     description:
-      "Stone-milled from heritage grains — wheat, ragi, jowar, and more.",
+      "All kinds of flours including millet-based flours for everyday healthy cooking.",
     image: "/flours.jpg",
     href: "/products?category=flours",
   },
   {
-    title: "Everyday Staples",
+    title: "Raw Products",
     description:
-      "Lentils, rice, jaggery and essentials sourced directly from farming communities.",
+      "Raw turmeric, dried red chillies, and assorted millets sourced directly from farms.",
     image: "/staples.jpg",
-    href: "/products?category=staples",
+    href: "/products?category=raw-products",
+  },
+  {
+    title: "Traditional Essentials",
+    description:
+      "Timeless home essentials like raw forest honey and other traditional pantry staples.",
+    image: "/staples.jpg",
+    href: "/products?category=traditional-essentials",
   },
 ];
 
@@ -40,7 +47,7 @@ export default function ProductCategories() {
         </div>
 
         {/* Category cards */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((cat) => (
             <Link
               key={cat.title}

@@ -35,42 +35,43 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold text-[#4a1a1a]">
-              Quick Links
-            </h3>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-zinc-700 transition-colors hover:text-zinc-900"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Quick Links + Policies: one row on mobile; sm+ unwraps into parent grid */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-0 sm:contents">
+            <div className="min-w-0">
+              <h3 className="mb-4 text-lg font-semibold text-[#4a1a1a]">
+                Quick Links
+              </h3>
+              <ul className="space-y-2">
+                {quickLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-zinc-700 transition-colors hover:text-zinc-900"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Policies */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold text-[#4a1a1a]">
-              Policies
-            </h3>
-            <ul className="space-y-2">
-              {policies.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-zinc-700 transition-colors hover:text-zinc-900"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="min-w-0">
+              <h3 className="mb-4 text-lg font-semibold text-[#4a1a1a]">
+                Policies
+              </h3>
+              <ul className="space-y-2">
+                {policies.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-zinc-700 transition-colors hover:text-zinc-900"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Contact */}
